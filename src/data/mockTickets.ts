@@ -1,0 +1,56 @@
+import type { RawTicket } from '../types/ticket';
+
+export const mockTickets: RawTicket[] = [
+  {
+    ticket_id: 'INC-1001',
+    assignment_group: 'Network Operations',
+    status: 'Open',
+    created_at: '2026-03-10T08:15:00Z',
+    updated_at: '2026-03-18T14:20:00Z',
+    priority: 'High',
+    short_description: 'WAN latency spike in east region',
+  },
+  {
+    ticket_id: 'INC-1002',
+    assignment_group: 'Network Operations',
+    status: 'Resolved',
+    created_at: '2026-01-11T10:00:00Z',
+    resolved_at: '2026-02-03T18:30:00Z',
+    priority: 'Medium',
+    short_description: 'Branch router firmware remediation',
+  },
+  {
+    ticket_id: 'INC-1003',
+    assignment_group: 'Service Desk',
+    status: 'In Progress',
+    created_at: '2026-02-14T12:00:00Z',
+    updated_at: '2026-03-17T09:10:00Z',
+    priority: 'Low',
+    short_description: 'Password reset workflow exception',
+  },
+  {
+    ticket_id: 'INC-1004',
+    assignment_group: 'Database Support',
+    status: 'Closed',
+    created_at: '2025-12-02T06:00:00Z',
+    closed_at: '2026-03-02T06:00:00Z',
+    priority: 'Critical',
+    short_description: 'Failover validation for production cluster',
+  },
+  {
+    ticket_id: 'INC-1005',
+    assignment_group: 'Database Support',
+    status: 'Open',
+    created_at: '2026-03-01T07:45:00Z',
+    priority: 'Medium',
+    short_description: 'Storage growth alert on analytics replica',
+  },
+  {
+    ticket_id: 'INC-1006',
+    assignment_group: 'Endpoint Engineering',
+    status: 'Pending',
+    created_at: '2026-02-01T07:45:00Z',
+    priority: 'Low',
+    short_description: 'Laptop refresh backlog review',
+  },
+];
