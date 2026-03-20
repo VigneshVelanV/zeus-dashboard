@@ -10,20 +10,50 @@ ITSM analytics dashboard for ageing tickets across assignment groups.
 
 ## Environment
 
-Create a `.env` file if you need to point the dashboard at a real API:
+For local UI development without a backend, set:
 
 ```bash
-VITE_API_BASE_URL=http://localhost:3001
+VITE_USE_MOCK_DATA=true
+```
+
+To use the real Atomicwork API locally, create a `.env.local` file:
+
+```bash
+ATOMICWORK_PROXY_TARGET=https://your-company.atomicwork.com
+ATOMICWORK_API_KEY=your-server-side-api-key
+ATOMICWORK_TICKETS_PATH=/api/v1/workspaces/318/requests/list?sort_order=CREATED_AT_DESC&page={pagenumber}&filter_name=all&is_problem=false
+
+VITE_API_BASE_URL=
 VITE_TICKETS_PATH=/api/tickets
 VITE_TICKETS_DATA_PATH=data
-VITE_API_AUTH_HEADER=Authorization
-VITE_API_AUTH_VALUE=Bearer your-token
 VITE_TICKETS_PAGE_PARAM=page
 VITE_TICKETS_PAGE_START=1
 VITE_USE_MOCK_DATA=false
 ```
 
-Set `VITE_USE_MOCK_DATA=true` for local UI development without the backend.
+The browser calls `/api/tickets`. In local dev, Vite proxies that route. On Vercel, `api/tickets.ts` handles it as a serverless function, so `ATOMICWORK_API_KEY` stays server-side.
+
+## Vercel
+
+Set these environment variables in Vercel:
+
+```bash
+ATOMICWORK_PROXY_TARGET=https://your-company.atomicwork.com
+ATOMICWORK_API_KEY=your-server-side-api-key
+ATOMICWORK_TICKETS_PATH=/api/v1/workspaces/318/requests/list?sort_order=CREATED_AT_DESC&page={pagenumber}&filter_name=all&is_problem=false
+
+VITE_TICKETS_PATH=/api/tickets
+VITE_TICKETS_DATA_PATH=data
+VITE_TICKETS_PAGE_PARAM=page
+VITE_TICKETS_PAGE_START=1
+VITE_USE_MOCK_DATA=false
+```
+
+Vercel settings:
+
+1. Framework preset: `Vite`
+2. Build command: `pnpm build`
+3. Output directory: `dist`
 
 ## Assumptions
 

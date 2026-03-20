@@ -9,6 +9,8 @@ const execFileAsync = promisify(execFile);
 
 function proxyAtomicworkRequest(
   targetBaseUrl: string,
+  targetPath: string,
+  apiKey: string,
   req: http.IncomingMessage,
   body: string,
 ): Promise<{
@@ -16,7 +18,7 @@ function proxyAtomicworkRequest(
   contentType?: string;
   body: string;
 }> {
-  const targetUrl = new URL(req.url ?? '/', targetBaseUrl);
+  const targetUrl = new URL(targetPath, targetBaseUrl);
 
   return execFileAsync('curl', [
     '-sS',
@@ -25,7 +27,7 @@ function proxyAtomicworkRequest(
     '-H',
     `Content-Type: ${req.headers['content-type']?.toString() || 'application/json'}`,
     '-H',
-    `x-api-key: ${req.headers['x-api-key']?.toString() || ''}`,
+    `x-api-key: ${apiKey}`,
     '--data',
     body,
     '-w',
@@ -47,6 +49,7 @@ function proxyAtomicworkRequest(
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
+  const ticketsPathTemplate = env.ATOMICWORK_TICKETS_PATH ?? '';
 
   return {
     plugins: [
@@ -55,12 +58,20 @@ export default defineConfig(({ mode }) => {
         name: 'atomicwork-dev-proxy',
         configureServer(server) {
           server.middlewares.use(async (req, res, next) => {
-            if (!env.ATOMICWORK_PROXY_TARGET || !req.url?.startsWith('/api/v1/')) {
+            if (
+              !env.ATOMICWORK_PROXY_TARGET ||
+              !env.ATOMICWORK_API_KEY ||
+              !ticketsPathTemplate ||
+              !req.url?.startsWith('/api/tickets')
+            ) {
               next();
               return;
             }
 
             try {
+              const incomingUrl = new URL(req.url, 'http://localhost');
+              const pageNumber = incomingUrl.searchParams.get('page') ?? env.VITE_TICKETS_PAGE_START ?? '1';
+              const targetPath = ticketsPathTemplate.replace(/\{pagenumber\}/g, pageNumber);
               const requestBody = await new Promise<string>((resolve, reject) => {
                 const chunks: Buffer[] = [];
 
@@ -71,17 +82,9 @@ export default defineConfig(({ mode }) => {
 
               const upstreamResult = await proxyAtomicworkRequest(
                 env.ATOMICWORK_PROXY_TARGET,
-                {
-                  ...req,
-                  headers: {
-                    ...req.headers,
-                    ...(env.ATOMICWORK_API_KEY
-                      ? {
-                          'x-api-key': env.ATOMICWORK_API_KEY,
-                        }
-                      : {}),
-                  },
-                } as http.IncomingMessage,
+                targetPath,
+                env.ATOMICWORK_API_KEY,
+                req,
                 ['GET', 'HEAD'].includes(req.method ?? 'GET') ? '' : requestBody,
               );
 
