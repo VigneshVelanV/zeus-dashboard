@@ -5,7 +5,7 @@ import { mockTickets } from '../data/mockTickets';
 import type { DashboardFilters, DashboardSummary, RawTicket, Ticket } from '../types/ticket';
 import { filterTickets, normalizeTickets, summarizeTickets } from '../utils/ticketTransforms';
 
-const USE_MOCK_DATA = import.meta.env.VITE_USE_MOCK_DATA === 'true';
+const USE_MOCK_DATA = import.meta.env.VITE_USE_MOCK_DATA !== 'false';
 
 export interface DashboardState {
   loading: boolean;
