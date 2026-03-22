@@ -101,7 +101,12 @@ function resolveHasMorePages(payload: unknown, pageNumber: number, recordsLength
 }
 
 function buildPagedUrl(pageNumber: number): string {
-  const rawUrl = `${API_CONFIG.baseUrl}${API_CONFIG.ticketsPath}`;
+  const normalizedBaseUrl =
+    API_CONFIG.baseUrl && API_CONFIG.baseUrl !== '/' ? API_CONFIG.baseUrl.replace(/\/+$/, '') : '';
+  const normalizedTicketsPath = API_CONFIG.ticketsPath.startsWith('/')
+    ? API_CONFIG.ticketsPath
+    : `/${API_CONFIG.ticketsPath}`;
+  const rawUrl = `${normalizedBaseUrl}${normalizedTicketsPath}`;
   const replacedTemplate = rawUrl.replace(/\{pagenumber\}/g, String(pageNumber));
 
   if (replacedTemplate !== rawUrl) {
