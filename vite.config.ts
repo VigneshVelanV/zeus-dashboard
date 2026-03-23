@@ -39,7 +39,14 @@ async function proxyAtomicworkRequest(
 }
 
 export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, process.cwd(), '');
+  const loadedEnv = loadEnv(mode, process.cwd(), '');
+  // Fallback to process.env if loadEnv doesn't have the values (for v0 Vars tab)
+  const env = {
+    ATOMICWORK_PROXY_TARGET: process.env.ATOMICWORK_PROXY_TARGET || loadedEnv.ATOMICWORK_PROXY_TARGET,
+    ATOMICWORK_API_KEY: process.env.ATOMICWORK_API_KEY || loadedEnv.ATOMICWORK_API_KEY,
+    ATOMICWORK_TICKETS_PATH: process.env.ATOMICWORK_TICKETS_PATH || loadedEnv.ATOMICWORK_TICKETS_PATH,
+    VITE_TICKETS_PAGE_START: process.env.VITE_TICKETS_PAGE_START || loadedEnv.VITE_TICKETS_PAGE_START,
+  };
   const ticketsPathTemplate = env.ATOMICWORK_TICKETS_PATH ?? '';
 
   return {
