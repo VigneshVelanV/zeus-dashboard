@@ -59,10 +59,8 @@ async function proxy(request: Request): Promise<Response> {
   });
 }
 
-export async function GET(request: Request): Promise<Response> {
-  return proxy(request);
-}
-
-export async function POST(request: Request): Promise<Response> {
-  return proxy(request);
-}
+export default {
+  async fetch(request: Request): Promise<Response> {
+    return proxy(request);
+  },
+};
