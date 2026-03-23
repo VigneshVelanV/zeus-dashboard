@@ -42,6 +42,10 @@ async function proxy(request: Request): Promise<Response> {
     });
   }
 
+  console.log('[v0] Upstream URL:', upstreamUrl);
+  console.log('[v0] API Key present:', !!apiKey);
+  console.log('[v0] Request method:', request.method);
+
   const upstreamResponse = await fetch(upstreamUrl, {
     method: request.method,
     headers: {
@@ -50,6 +54,8 @@ async function proxy(request: Request): Promise<Response> {
     },
     body: ['GET', 'HEAD'].includes(request.method) ? undefined : await request.text(),
   });
+
+  console.log('[v0] Upstream response status:', upstreamResponse.status);
 
   return new Response(upstreamResponse.body, {
     status: upstreamResponse.status,
