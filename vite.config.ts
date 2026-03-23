@@ -1,13 +1,9 @@
 import http from 'node:http';
-import { execFile } from 'node:child_process';
-import { promisify } from 'node:util';
 import { defineConfig } from 'vitest/config';
 import { loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 
-const execFileAsync = promisify(execFile);
-
-function proxyAtomicworkRequest(
+async function proxyAtomicworkRequest(
   targetBaseUrl: string,
   targetPath: string,
   apiKey: string,
@@ -20,31 +16,26 @@ function proxyAtomicworkRequest(
 }> {
   const targetUrl = new URL(targetPath, targetBaseUrl);
 
-  return execFileAsync('curl', [
-    '-sS',
-    '-X',
-    req.method ?? 'GET',
-    '-H',
-    `Content-Type: ${req.headers['content-type']?.toString() || 'application/json'}`,
-    '-H',
-    `x-api-key: ${apiKey}`,
-    '--data',
-    body,
-    '-w',
-    '\n%{http_code}\n%{content_type}',
-    targetUrl.toString(),
-  ]).then(({ stdout }) => {
-    const lines = stdout.split('\n');
-    const contentType = lines.pop() || 'application/json';
-    const statusCode = Number(lines.pop() || '502');
-    const responseBody = lines.join('\n');
+  console.log('[v0] Proxying to:', targetUrl.toString());
 
-    return {
-      statusCode,
-      contentType,
-      body: responseBody,
-    };
+  const response = await fetch(targetUrl.toString(), {
+    method: req.method ?? 'GET',
+    headers: {
+      'Content-Type': req.headers['content-type']?.toString() || 'application/json',
+      'x-api-key': apiKey,
+    },
+    body: ['GET', 'HEAD'].includes(req.method ?? 'GET') ? undefined : body,
   });
+
+  const responseBody = await response.text();
+
+  console.log('[v0] Upstream response status:', response.status);
+
+  return {
+    statusCode: response.status,
+    contentType: response.headers.get('content-type') || 'application/json',
+    body: responseBody,
+  };
 }
 
 export default defineConfig(({ mode }) => {
@@ -58,12 +49,18 @@ export default defineConfig(({ mode }) => {
         name: 'atomicwork-dev-proxy',
         configureServer(server) {
           server.middlewares.use(async (req, res, next) => {
+            console.log('[v0] Middleware hit:', req.url);
+            console.log('[v0] ATOMICWORK_PROXY_TARGET:', env.ATOMICWORK_PROXY_TARGET);
+            console.log('[v0] ATOMICWORK_API_KEY present:', !!env.ATOMICWORK_API_KEY);
+            console.log('[v0] ticketsPathTemplate:', ticketsPathTemplate);
+
             if (
               !env.ATOMICWORK_PROXY_TARGET ||
               !env.ATOMICWORK_API_KEY ||
               !ticketsPathTemplate ||
               !req.url?.startsWith('/api/tickets')
             ) {
+              console.log('[v0] Skipping proxy - conditions not met');
               next();
               return;
             }
