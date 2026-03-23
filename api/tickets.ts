@@ -72,3 +72,8 @@ export async function GET(request: Request): Promise<Response> {
 export async function POST(request: Request): Promise<Response> {
   return proxy(request);
 }
+
+// Default export for Vercel Functions compatibility
+export default async function handler(request: Request): Promise<Response> {
+  return proxy(request);
+}
